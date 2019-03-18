@@ -1,0 +1,44 @@
+{
+  "name": "mfc-to-sfc",
+  "description": "Migrate a structure of vue components in multiple files to SFC",
+  "version": "0.0.0",
+  "author": "Mauricio Boxtael @mboxtael",
+  "bin": {
+    "mfc-to-sfc": "./bin/run"
+  },
+  "bugs": "https://github.com/mboxtael/mfc-to-sfc/issues",
+  "dependencies": {
+    "@oclif/command": "^1",
+    "@oclif/config": "^1",
+    "@oclif/plugin-help": "^2",
+    "amd-to-es6": "^0.1.0",
+    "glob": "^7.1.3",
+    "lebab": "^3.0.4",
+    "lodash": "^4.17.11"
+  },
+  "devDependencies": {
+    "eslint": "^5.13",
+    "eslint-config-oclif": "^3.1"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "files": [
+    "/bin",
+    "/src"
+  ],
+  "homepage": "https://github.com/mboxtael/mfc-to-sfc",
+  "keywords": [
+    "oclif"
+  ],
+  "license": "MIT",
+  "main": "src/index.js",
+  "oclif": {
+    "bin": "mfc-to-sfc"
+  },
+  "repository": "mboxtael/mfc-to-sfc",
+  "scripts": {
+    "posttest": "eslint .",
+    "test": "echo NO TESTS"
+  }
+}
