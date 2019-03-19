@@ -1,5 +1,4 @@
 const fs = require('fs');
-const path = require('path');
 const glob = require('glob');
 const { Command, flags } = require('@oclif/command');
 const lebab = require('lebab');
@@ -19,8 +18,14 @@ const addDynamicImports = source => {
   );
 };
 
-const removeVueExtend = source => {
-  return source.replace('Vue.extend(', '').replace(/}\);$/, '};');
+const removeUnusedCode = source => {
+  return source
+    .replace('Vue.extend(', '')
+    .replace(/}\);$/, '};')
+    .replace(/import\sVue\sfrom\s'vue';\n/, '')
+    .replace(/import\s(T|t)emplate\sfrom\s'.+';\n/, '')
+    .replace(/import\sComponentLoader\sfrom\s'.+';\n/, '')
+    .replace(/template(: Template)?,\n\n/, '');
 };
 
 const ES5ToES6 = source => {
@@ -44,44 +49,44 @@ class MfcToSfcCommand extends Command {
     glob('**/*_component.js', (err, files) => {
       this.log(`Files found: ${files.length}`);
 
-      const scriptFile = files[0];
-
-      fs.readFile(scriptFile, 'utf-8', (err, content) => {
-        if (err) throw err;
-
-        const templateFilename = scriptFile.replace(
-          '_component.js',
-          '_template.html'
-        );
-
-        fs.readFile(templateFilename, 'utf-8', (err, templateContent) => {
+      files.forEach(scriptFile => {
+        fs.readFile(scriptFile, 'utf-8', (err, content) => {
           if (err) throw err;
 
-          const singleFilename = scriptFile.replace(
+          const templateFilename = scriptFile.replace(
             '_component.js',
-            '_component.vue'
+            '_template.html'
           );
 
-          const script = removeVueExtend(
-            addDynamicImports(
-              ES5ToES6(AMDToESM(removeDynamicImports(content)))
-            ).trim()
-          );
-
-          const singleContent = `
-            <script>
-            ${script}
-            </script>
-  
-            <template>
-            ${templateContent}
-            </template>
-          `;
-
-          fs.writeFile(singleFilename, singleContent, err => {
+          fs.readFile(templateFilename, 'utf-8', (err, templateContent) => {
             if (err) throw err;
 
-            this.log('Done!');
+            const singleFilename = scriptFile.replace(
+              '_component.js',
+              '_component.vue'
+            );
+
+            const script = removeUnusedCode(
+              addDynamicImports(
+                ES5ToES6(AMDToESM(removeDynamicImports(content)))
+              ).trim()
+            );
+
+            const singleContent = `
+              <script>
+              ${script}
+              </script>
+    
+              <template>
+              ${templateContent}
+              </template>
+            `;
+
+            fs.writeFile(singleFilename, singleContent, err => {
+              if (err) throw err;
+
+              this.log('Done!');
+            });
           });
         });
       });
