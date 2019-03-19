@@ -1,6 +1,7 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
-const glob = require('glob');
+const util = require('util');
+const glob = util.promisify(require('glob'));
 const { Command, flags } = require('@oclif/command');
 const lebab = require('lebab');
 const AMDToESM = require('amd-to-es6');
@@ -50,8 +51,8 @@ const ES5ToES6 = source => {
   return code;
 };
 
-const searchResourceDir = currentPath => {
-  const items = fs.readdirSync(currentPath);
+const searchResourceDir = async currentPath => {
+  const items = await fs.readdir(currentPath);
 
   if (items.some(item => item === 'resource')) {
     return path.join(currentPath, 'resource');
@@ -65,98 +66,95 @@ const searchResourceDir = currentPath => {
 class MfcToSfcCommand extends Command {
   async run() {
     const { flags } = this.parse(MfcToSfcCommand);
+    const resourceDir = await searchResourceDir(process.cwd());
 
-    const resourceDir = searchResourceDir(process.cwd());
+    try {
+      const files = await glob('**/*_component.js');
 
-    glob('**/*_component.js', (err, files) => {
       this.log(`Files found: ${files.length}`);
 
-      files.forEach(scriptFile => {
-        fs.readFile(scriptFile, 'utf-8', (err, content) => {
-          if (err) throw err;
-
+      await Promise.all(
+        files.map(async scriptFile => {
           const templateFilename = scriptFile.replace(
             '_component.js',
             '_template.html'
           );
+          const singleFilename = scriptFile.replace(
+            '_component.js',
+            '_component.vue'
+          );
+          const scriptContent = await fs.readFile(scriptFile, 'utf-8');
+          const templateContent = await fs.readFile(templateFilename, 'utf-8');
 
-          fs.readFile(templateFilename, 'utf-8', (err, templateContent) => {
-            if (err) throw err;
+          let script = removeUnusedCode(
+            addDynamicImports(
+              ES5ToES6(AMDToESM(removeDynamicImports(scriptContent)))
+            ).trim()
+          );
 
-            const singleFilename = scriptFile.replace(
-              '_component.js',
-              '_component.vue'
+          const styleMatch = new RegExp(
+            "import '(scss/(?!(components/cards/card.scss)).*?)';",
+            'm'
+          ).exec(script);
+
+          let singleContent = '';
+
+          if (styleMatch && styleMatch[1]) {
+            script = removeStyleImport(script);
+            const styleFilename = styleMatch[1];
+            const styleContent = await fs.readFile(
+              path.join(resourceDir, styleFilename)
             );
 
-            let script = removeUnusedCode(
-              addDynamicImports(
-                ES5ToES6(AMDToESM(removeDynamicImports(content)))
-              ).trim()
-            );
-
-            const styleMatch = new RegExp(
-              "import '(scss/(?!(components/cards/card.scss)).*?)';",
-              'm'
-            ).exec(script);
-
-            if (styleMatch) {
-              const styleFilename = styleMatch[1];
-
-              script = removeStyleImport(script);
-
-              fs.readFile(
-                path.join(resourceDir, styleFilename),
-                (err, styleContent) => {
-                  if (err) throw err;
-
-                  const singleContent = `
-                  <script>
-                  ${script}
-                  </script>
-    
-                  <template>
-                  ${templateContent}
-                  </template>
+            singleContent = `
+          <script>
+          ${script}
+          </script>
   
-                  <style lang="scss">
-                  ${styleContent}
-                  </style>
-                `;
+          <template>
+          ${templateContent}
+          </template>
+  
+          <style lang="scss">
+          ${styleContent}
+          </style>
+          `;
+          } else {
+            singleContent = `
+          <script>
+          ${script}
+          </script>
+  
+          <template>
+          ${templateContent}
+          </template>
+          `;
+          }
 
-                  fs.writeFile(singleFilename, singleContent, err => {
-                    if (err) throw err;
+          await fs.writeFile(singleFilename, singleContent);
+        })
+      );
 
-                    this.log('Done!');
-                  });
-                }
-              );
-            } else {
-              const singleContent = `
-                  <script>
-                  ${script}
-                  </script>
-    
-                  <template>
-                  ${templateContent}
-                  </template>
-                `;
-
-              fs.writeFile(singleFilename, singleContent, err => {
-                if (err) throw err;
-
-                this.log('Done!');
-              });
-            }
-          });
-        });
-      });
-    });
+      this.log('Done!');
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
 
-MfcToSfcCommand.description = `Describe the command here
+MfcToSfcCommand.description = `Utility to help the migration process of Vue's SFC
 ...
-Extra documentation goes here
+This utility migrates an structure of vue components defined in multiple files and produces
+the equivalent Vue single file components, for example, take this structure:
+|- hello-worl 
+  |- hello-worl_component.js
+  |- hello-worl_template.html
+
+the result will be
+|- hello-worl
+  |- hello-worl_component.js
+  |- hello-worl_template.html
+  |- hello-worl_component.vue
 `;
 
 MfcToSfcCommand.flags = {
@@ -164,7 +162,6 @@ MfcToSfcCommand.flags = {
   version: flags.version({ char: 'v' }),
   // add --help flag to show CLI version
   help: flags.help({ char: 'h' }),
-  name: flags.string({ char: 'n', description: 'name to print' })
 };
 
 module.exports = MfcToSfcCommand;
