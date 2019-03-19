@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const glob = require('glob');
 const { Command, flags } = require('@oclif/command');
 const lebab = require('lebab');
@@ -28,6 +29,13 @@ const removeUnusedCode = source => {
     .replace(/template(: Template)?,\n\n/, '');
 };
 
+const removeStyleImport = source => {
+  return source.replace(
+    new RegExp("import 'scss/(?!(components/cards/card.scss)).*';"),
+    ''
+  );
+};
+
 const ES5ToES6 = source => {
   const { code } = lebab.transform(source, [
     'arrow',
@@ -42,9 +50,23 @@ const ES5ToES6 = source => {
   return code;
 };
 
+const searchResourceDir = currentPath => {
+  const items = fs.readdirSync(currentPath);
+
+  if (items.some(item => item === 'resource')) {
+    return path.join(currentPath, 'resource');
+  } else if (!items.some(item => item === 'src')) {
+    return searchResourceDir(path.join(currentPath, '..'));
+  }
+
+  throw new Error('Resource folder not found');
+};
+
 class MfcToSfcCommand extends Command {
   async run() {
     const { flags } = this.parse(MfcToSfcCommand);
+
+    const resourceDir = searchResourceDir(process.cwd());
 
     glob('**/*_component.js', (err, files) => {
       this.log(`Files found: ${files.length}`);
@@ -66,27 +88,65 @@ class MfcToSfcCommand extends Command {
               '_component.vue'
             );
 
-            const script = removeUnusedCode(
+            let script = removeUnusedCode(
               addDynamicImports(
                 ES5ToES6(AMDToESM(removeDynamicImports(content)))
               ).trim()
             );
 
-            const singleContent = `
-              <script>
-              ${script}
-              </script>
+            const styleMatch = new RegExp(
+              "import '(scss/(?!(components/cards/card.scss)).*?)';",
+              'm'
+            ).exec(script);
+
+            if (styleMatch) {
+              const styleFilename = styleMatch[1];
+
+              script = removeStyleImport(script);
+
+              fs.readFile(
+                path.join(resourceDir, styleFilename),
+                (err, styleContent) => {
+                  if (err) throw err;
+
+                  const singleContent = `
+                  <script>
+                  ${script}
+                  </script>
     
-              <template>
-              ${templateContent}
-              </template>
-            `;
+                  <template>
+                  ${templateContent}
+                  </template>
+  
+                  <style lang="scss">
+                  ${styleContent}
+                  </style>
+                `;
 
-            fs.writeFile(singleFilename, singleContent, err => {
-              if (err) throw err;
+                  fs.writeFile(singleFilename, singleContent, err => {
+                    if (err) throw err;
 
-              this.log('Done!');
-            });
+                    this.log('Done!');
+                  });
+                }
+              );
+            } else {
+              const singleContent = `
+                  <script>
+                  ${script}
+                  </script>
+    
+                  <template>
+                  ${templateContent}
+                  </template>
+                `;
+
+              fs.writeFile(singleFilename, singleContent, err => {
+                if (err) throw err;
+
+                this.log('Done!');
+              });
+            }
           });
         });
       });
