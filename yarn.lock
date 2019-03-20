@@ -80,13 +80,6 @@ abbrev@1:
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
   integrity sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==
 
-acorn-jsx@^2.0.0:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/acorn-jsx/-/acorn-jsx-2.0.1.tgz#0edf9878a5866bca625f52955a1ed9e7d8c5117e"
-  integrity sha1-Dt+YeKWGa8piX1KVWh7Z59jFEX4=
-  dependencies:
-    acorn "^2.0.1"
-
 acorn-jsx@^5.0.0:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/acorn-jsx/-/acorn-jsx-5.0.1.tgz#32a064fd925429216a09b141102bfdd185fae40e"
@@ -97,12 +90,7 @@ acorn@^1.0.3:
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-1.2.2.tgz#c8ce27de0acc76d896d2b1fad3df588d9e82f014"
   integrity sha1-yM4n3grMdtiW0rH6099YjZ6C8BQ=
 
-acorn@^2.0.1:
-  version "2.7.0"
-  resolved "https://registry.yarnpkg.com/acorn/-/acorn-2.7.0.tgz#ab6e7d9d886aaca8b085bc3312b79a198433f0e7"
-  integrity sha1-q259nYhqrKiwhbwzEreaGYQz8Oc=
-
-acorn@^6.0.2, acorn@^6.0.7:
+acorn@^6.0.2, acorn@^6.0.7, acorn@^6.1.1:
   version "6.1.1"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-6.1.1.tgz#7d25ae05bb8ad1f9b699108e1094ecd7884adc1f"
   integrity sha512-jPTiwtOxaHNaAPg/dmrJ/beuzLRnXtB0kQPQ8JpotKJgTB6rX6c8mlf315941pyjBSaPg8NHXS9fhP4u17DpGA==
@@ -117,12 +105,11 @@ ajv@^6.9.1:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-amd-to-es6@^0.1.0:
+amd-to-es6@mboxtael/amd-to-as6:
   version "0.1.0"
-  resolved "https://registry.yarnpkg.com/amd-to-es6/-/amd-to-es6-0.1.0.tgz#ed0004cd16dbfbf2f32437576ab5205c1c727226"
-  integrity sha1-7QAEzRbb+/LzJDdXarUgXBxyciY=
+  resolved "https://codeload.github.com/mboxtael/amd-to-as6/tar.gz/90f9e39d4ce30c8ac808246545a0c65dacd91deb"
   dependencies:
-    acorn-jsx "^2.0.0"
+    acorn "^6.1.1"
     commander "^2.4.0"
     falafel "~1.2.0"
     glob "^4.0.6"

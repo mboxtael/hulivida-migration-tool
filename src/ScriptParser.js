@@ -55,7 +55,6 @@ const toESM = source => {
   try {
     return AMDToESM(source);
   } catch (error) {
-    console.log(source);
     throw error;
   }
 };
