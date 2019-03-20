@@ -3,7 +3,7 @@ const AMDToESM = require('amd-to-es6');
 
 const getStyleFilename = source => {
   const styleMatch = new RegExp(
-    "'(scss/(?!(components/cards/card.scss)).*?)'",
+    /'(scss\/(?!(?:components\/cards\/card\.scss)).*?)'/,
     'm'
   ).exec(source);
 
@@ -15,31 +15,26 @@ const getStyleFilename = source => {
 };
 
 const removeDynamicImports = source => {
-  return source.replace(
-    new RegExp(/import(\((\w|\/|-|_|')+\)?)/, 'g'),
-    'noimport$1'
-  );
+  return source.replace(new RegExp(/import\('/, 'g'), "noimport('");
 };
 
 const addDynamicImports = source => {
-  return source.replace(
-    new RegExp(/noimport(\((\w|\/|-|_|')+\)?)/, 'g'),
-    'import$1'
-  );
+  return source.replace(new RegExp(/noimport\('/, 'g'), "import('");
+};
+
+const removeComponentDefinition = source => {
+  const componentDefinition = /(?:(?:const\s\w+\s=)|(?:export\sdefault))\sVue.extend\(({(\s|\n|.)+})\);(?:\s*export\sdefault\s\w+;)?/;
+
+  return source.replace(componentDefinition, 'export default $1;');
 };
 
 const removeUnusedCode = source => {
   return source
-    .replace('Vue.extend(', '')
-    .replace(/}\);$/, '};')
-    .replace(/import\sVue\sfrom\s'vue';\n/, '')
-    .replace(/import\s(T|t)emplate\sfrom\s'.+';\n/, '')
-    .replace(/import\sComponentLoader\sfrom\s'.+';\n/, '')
-    .replace(/template(: Template)?,\n\n/, '')
-    .replace(
-      new RegExp("import 'scss/(?!(components/cards/card.scss)).*';"),
-      ''
-    );
+    .replace(/import\sVue\sfrom\s'vue';\s/, '')
+    .replace(/import\s(?:T|t)emplate\sfrom\s'.+';\s/, '')
+    .replace(/import\sComponentLoader\sfrom\s'.+';\s/, '')
+    .replace(/template(?:: Template)?,\s/, '')
+    .replace(/import\s'scss\/(?!(?:components\/cards\/card\.scss)).*';/, '');
 };
 
 const toES6 = source => {
@@ -57,7 +52,12 @@ const toES6 = source => {
 };
 
 const toESM = source => {
-  return AMDToESM(source);
+  try {
+    return AMDToESM(source);
+  } catch (error) {
+    console.log(source);
+    throw error;
+  }
 };
 
 module.exports.parse = source => {
@@ -70,6 +70,7 @@ module.exports.parse = source => {
   parsedSource = toESM(parsedSource);
   parsedSource = toES6(parsedSource);
   parsedSource = addDynamicImports(parsedSource);
+  parsedSource = removeComponentDefinition(parsedSource);
   parsedSource = removeUnusedCode(parsedSource);
 
   return { styleFilename, source: parsedSource };
