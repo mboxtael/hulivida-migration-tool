@@ -14,7 +14,8 @@
     "amd-to-es6": "mboxtael/amd-to-as6",
     "glob": "^7.1.3",
     "lebab": "^3.0.4",
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.11",
+    "mkdirp": "^0.5.1"
   },
   "devDependencies": {
     "eslint": "^5.13",

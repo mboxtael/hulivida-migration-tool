@@ -2,22 +2,22 @@ const fs = require('fs');
 const path = require('path');
 const util = require('util');
 const glob = util.promisify(require('glob'));
+const mkdirp = util.promisify(require('mkdirp'));
 const SFCGenerator = require('./SFCGenerator');
 const ScriptParser = require('./ScriptParser');
-const styleParser = require('./styleParser');
+const StyleParser = require('./StyleParser');
 
 const readFile = util.promisify(fs.readFile);
 const readdir = util.promisify(fs.readdir);
 const writeFile = util.promisify(fs.writeFile);
 
-const getFiles = async globPattern => {
-  return await glob(globPattern);
-};
-
-const processFiles = async files => {
+const processComponents = async () => {
+  const files = await glob('**/*_component.js');
   const resourceDir = await searchResourceDir(process.cwd());
 
-  return Promise.all(
+  console.log(`Components found: ${files.length}`);
+
+  await Promise.all(
     files.map(async scriptFile => {
       const templateFilename = scriptFile.replace(
         '_component.js',
@@ -25,9 +25,10 @@ const processFiles = async files => {
       );
       const scriptContent = await readFile(scriptFile, 'utf-8');
       const templateContent = await readFile(templateFilename, 'utf-8');
-      const { source: scriptParsed, styleFilename } = ScriptParser.parse(
-        scriptContent
-      );
+      const {
+        source: scriptParsed,
+        styleFilename
+      } = ScriptParser.parseComponent(scriptContent);
       let styleContent = '';
 
       if (styleFilename) {
@@ -41,12 +42,35 @@ const processFiles = async files => {
       const SFCContent = SFCGenerator.generate(
         scriptParsed,
         templateContent,
-        styleParser.parse(styleContent).source
+        StyleParser.parse(styleContent).source
       );
 
-      await writeFile(SFCFilename, SFCContent);
+      const appSFCPath = path.resolve(SFCFilename).replace('/js', '/app');
+      await mkdirp(path.dirname(appSFCPath));
+      await writeFile(appSFCPath, SFCContent);
     })
   );
+
+  console.log('Components processed!');
+};
+
+const processScripts = async () => {
+  const files = await glob('**/!(*_component).js');
+
+  console.log(`Scripts found: ${files.length}`);
+
+  await Promise.all(
+    files.map(async scriptFilename => {
+      const scriptContent = await readFile(scriptFilename, 'utf-8');
+      const { source: scriptParsed } = ScriptParser.parse(scriptContent);
+
+      const appScriptPath = path.resolve(scriptFilename).replace('/js', '/app');
+      await mkdirp(path.dirname(appScriptPath));
+      await writeFile(appScriptPath, scriptParsed);
+    })
+  );
+
+  console.log('Scripts processed!');
 };
 
 const searchResourceDir = async currentPath => {
@@ -61,16 +85,7 @@ const searchResourceDir = async currentPath => {
   throw new Error('Resource folder not found');
 };
 
-module.exports.process = async globPattern => {
-  try {
-    const files = await getFiles(globPattern);
-
-    console.log(`Files found: ${files.length}`);
-
-    await processFiles(files);
-
-    console.log('Done!');
-  } catch (error) {
-    throw error;
-  }
+module.exports.process = async () => {
+  await processComponents();
+  await processScripts();
 };

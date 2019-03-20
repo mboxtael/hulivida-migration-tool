@@ -59,7 +59,7 @@ const toESM = source => {
   }
 };
 
-module.exports.parse = source => {
+module.exports.parseComponent = source => {
   let parsedSource = source;
 
   // First we get the style filename because later it will be removed
@@ -74,3 +74,15 @@ module.exports.parse = source => {
 
   return { styleFilename, source: parsedSource };
 };
+
+module.exports.parse = source => {
+  let parsedSource = source;
+
+  parsedSource = removeDynamicImports(parsedSource);
+  parsedSource = toESM(parsedSource);
+  parsedSource = toES6(parsedSource);
+  parsedSource = addDynamicImports(parsedSource);
+
+  return { source: parsedSource };
+};
+
