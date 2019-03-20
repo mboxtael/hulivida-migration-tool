@@ -4,6 +4,7 @@ const util = require('util');
 const glob = util.promisify(require('glob'));
 const SFCGenerator = require('./SFCGenerator');
 const ScriptParser = require('./ScriptParser');
+const styleParser = require('./styleParser');
 
 const readFile = util.promisify(fs.readFile);
 const readdir = util.promisify(fs.readdir);
@@ -40,7 +41,7 @@ const processFiles = async files => {
       const SFCContent = SFCGenerator.generate(
         scriptParsed,
         templateContent,
-        styleContent
+        styleParser.parse(styleContent).source
       );
 
       await writeFile(SFCFilename, SFCContent);
