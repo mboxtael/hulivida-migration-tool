@@ -39,8 +39,6 @@ const removeUnusedCode = source => {
 
 const toES6 = source => {
   const { code } = lebab.transform(source, [
-    'arrow',
-    'arrow-return',
     'obj-shorthand',
     'obj-method',
     'no-strict',
