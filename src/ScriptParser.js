@@ -30,7 +30,6 @@ const removeComponentDefinition = source => {
 
 const removeUnusedCode = source => {
   return source
-    .replace(/import\sVue\sfrom\s'vue';\s/, '')
     .replace(/import\s(?:T|t)emplate\sfrom\s'.+';\s/, '')
     .replace(/import\sComponentLoader\sfrom\s'.+';\s/, '')
     .replace(/template(?:: Template)?,\s/, '')
@@ -39,6 +38,7 @@ const removeUnusedCode = source => {
 
 const toES6 = source => {
   const { code } = lebab.transform(source, [
+    'arrow',
     'obj-shorthand',
     'obj-method',
     'no-strict',
@@ -70,7 +70,7 @@ module.exports.parseComponent = source => {
   parsedSource = removeComponentDefinition(parsedSource);
   parsedSource = removeUnusedCode(parsedSource);
 
-  return { styleFilename, source: parsedSource };
+  return { styleFilename, output: parsedSource };
 };
 
 module.exports.parse = source => {
@@ -81,6 +81,6 @@ module.exports.parse = source => {
   parsedSource = toES6(parsedSource);
   parsedSource = addDynamicImports(parsedSource);
 
-  return { source: parsedSource };
+  return { output: parsedSource };
 };
 

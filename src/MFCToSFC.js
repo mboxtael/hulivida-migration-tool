@@ -6,6 +6,7 @@ const mkdirp = util.promisify(require('mkdirp'));
 const SFCGenerator = require('./SFCGenerator');
 const ScriptParser = require('./ScriptParser');
 const StyleParser = require('./StyleParser');
+const Formatter = require('./Formatter');
 
 const readFile = util.promisify(fs.readFile);
 const readdir = util.promisify(fs.readdir);
@@ -26,7 +27,7 @@ const processComponents = async () => {
       const scriptContent = await readFile(scriptFile, 'utf-8');
       const templateContent = await readFile(templateFilename, 'utf-8');
       const {
-        source: scriptParsed,
+        output: scriptParsed,
         styleFilename
       } = ScriptParser.parseComponent(scriptContent);
       let styleContent = '';
@@ -39,11 +40,12 @@ const processComponents = async () => {
       }
 
       const SFCFilename = scriptFile.replace('_component.js', '_component.vue');
-      const SFCContent = SFCGenerator.generate(
+      let SFCContent = SFCGenerator.generate(
         scriptParsed,
         templateContent,
-        StyleParser.parse(styleContent).source
+        StyleParser.parse(styleContent).output
       );
+      SFCContent = Formatter.formatComponent(SFCContent);
 
       const appSFCPath = path.resolve(SFCFilename).replace('/js', '/app');
       await mkdirp(path.dirname(appSFCPath));
@@ -62,7 +64,9 @@ const processScripts = async () => {
   await Promise.all(
     files.map(async scriptFilename => {
       const scriptContent = await readFile(scriptFilename, 'utf-8');
-      const { source: scriptParsed } = ScriptParser.parse(scriptContent);
+      let { output: scriptParsed } = ScriptParser.parse(scriptContent);
+
+      scriptParsed = Formatter.format(scriptParsed);
 
       const appScriptPath = path.resolve(scriptFilename).replace('/js', '/app');
       await mkdirp(path.dirname(appScriptPath));

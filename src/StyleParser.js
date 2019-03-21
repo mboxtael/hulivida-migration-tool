@@ -5,5 +5,5 @@ const removeRelativeImports = source => {
 module.exports.parse = source => {
   let parsedSource = removeRelativeImports(source);
 
-  return { source: parsedSource };
+  return { output: parsedSource };
 };
