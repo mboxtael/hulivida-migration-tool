@@ -1,7 +1,7 @@
 const lebab = require('lebab');
 const AMDToESM = require('amd-to-es6');
 
-const getStyleFilename = source => {
+const extractStyleFilename = source => {
   const styleMatch = new RegExp(
     /'(scss\/(?!(?:components\/cards\/card\.scss)).*?)'/,
     'm'
@@ -49,9 +49,9 @@ const toES6 = source => {
   return code;
 };
 
-const toESM = source => {
+const AMDtoES6 = source => {
   try {
-    return AMDToESM(source);
+    return addDynamicImports(toES6(AMDToESM(removeDynamicImports(source))));
   } catch (error) {
     throw error;
   }
@@ -61,12 +61,9 @@ module.exports.parseComponent = source => {
   let parsedSource = source;
 
   // First we get the style filename because later it will be removed
-  const styleFilename = getStyleFilename(source);
+  const styleFilename = extractStyleFilename(source);
 
-  parsedSource = removeDynamicImports(parsedSource);
-  parsedSource = toESM(parsedSource);
-  parsedSource = toES6(parsedSource);
-  parsedSource = addDynamicImports(parsedSource);
+  parsedSource = AMDtoES6(parsedSource);
   parsedSource = removeComponentDefinition(parsedSource);
   parsedSource = removeUnusedCode(parsedSource);
 
@@ -76,11 +73,7 @@ module.exports.parseComponent = source => {
 module.exports.parse = source => {
   let parsedSource = source;
 
-  parsedSource = removeDynamicImports(parsedSource);
-  parsedSource = toESM(parsedSource);
-  parsedSource = toES6(parsedSource);
-  parsedSource = addDynamicImports(parsedSource);
+  parsedSource = AMDtoES6(parsedSource);
 
   return { output: parsedSource };
 };
-
