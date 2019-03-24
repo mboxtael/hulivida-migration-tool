@@ -114,5 +114,5 @@ const writeToApp = async (filename, content) => {
 
 module.exports.process = async () => {
   await processComponents();
-  // await processScripts();
+  await processScripts();
 };

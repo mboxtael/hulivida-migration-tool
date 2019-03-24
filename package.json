@@ -1,18 +1,19 @@
 {
-  "name": "mfc-to-sfc",
+  "name": "@mboxtael/hulivida-migration-tool",
   "description": "Migrate a structure of vue components in multiple files to SFC",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "author": "Mauricio Boxtael @mboxtael",
   "bin": {
-    "mfc-to-sfc": "./bin/run"
+    "hulivida-migration-tool": "./bin/run"
   },
-  "bugs": "https://github.com/mboxtael/mfc-to-sfc/issues",
+  "bugs": "https://github.com/mboxtael/hulivida-migration-tool/issues",
   "dependencies": {
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^2",
     "amd-to-es6": "mboxtael/amd-to-as6",
     "babel-eslint": "^10.0.1",
+    "eslint": "^5.15.3",
     "eslint-config-prettier": "^4.1.0",
     "eslint-plugin-prettier": "^3.0.1",
     "eslint-plugin-vue": "^5.2.2",
@@ -23,7 +24,6 @@
     "prettier": "^1.16.4"
   },
   "devDependencies": {
-    "eslint": "^5.15.3",
     "eslint-config-oclif": "^3.1"
   },
   "engines": {
@@ -33,16 +33,16 @@
     "/bin",
     "/src"
   ],
-  "homepage": "https://github.com/mboxtael/mfc-to-sfc",
+  "homepage": "https://github.com/mboxtael/hulivida-migration-tool",
   "keywords": [
     "oclif"
   ],
   "license": "MIT",
   "main": "src/index.js",
   "oclif": {
-    "bin": "mfc-to-sfc"
+    "bin": "hulivida-migration-tool"
   },
-  "repository": "mboxtael/mfc-to-sfc",
+  "repository": "mboxtael/hulivida-migration-tool",
   "scripts": {
     "posttest": "eslint .",
     "test": "echo NO TESTS"
