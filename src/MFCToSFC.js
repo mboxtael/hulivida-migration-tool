@@ -18,8 +18,8 @@ const processComponents = async () => {
 
   console.log(`Components found: ${files.length}`);
 
-  await Promise.all(
-    files.map(async scriptFile => {
+  for (const scriptFile of files) {
+    try {
       const templateFilename = scriptFile.replace(
         '_component.js',
         '_template.html'
@@ -45,13 +45,22 @@ const processComponents = async () => {
         templateContent,
         StyleParser.parse(styleContent).output
       );
-      SFCContent = Formatter.formatComponent(SFCContent);
 
-      const appSFCPath = path.resolve(SFCFilename).replace('/js', '/app');
-      await mkdirp(path.dirname(appSFCPath));
-      await writeFile(appSFCPath, SFCContent);
-    })
-  );
+      try {
+        SFCContent = Formatter.formatComponent(SFCContent);
+      } catch (error) {
+        console.log(
+          `*** Formatting error ${scriptFile}`,
+          '\n',
+          error.toString()
+        );
+      }
+
+      await writeToApp(SFCFilename, SFCContent);
+    } catch (error) {
+      console.log(`*** Error ${scriptFile}`, '\n', error.toString());
+    }
+  }
 
   console.log('Components processed!');
 };
@@ -61,18 +70,26 @@ const processScripts = async () => {
 
   console.log(`Scripts found: ${files.length}`);
 
-  await Promise.all(
-    files.map(async scriptFilename => {
+  for (const scriptFilename of files) {
+    try {
       const scriptContent = await readFile(scriptFilename, 'utf-8');
       let { output: scriptParsed } = ScriptParser.parse(scriptContent);
 
-      scriptParsed = Formatter.format(scriptParsed);
+      try {
+        scriptParsed = Formatter.format(scriptParsed);
+      } catch (error) {
+        console.log(
+          `*** Formatting error ${scriptFilename}`,
+          '\n',
+          error.toString()
+        );
+      }
 
-      const appScriptPath = path.resolve(scriptFilename).replace('/js', '/app');
-      await mkdirp(path.dirname(appScriptPath));
-      await writeFile(appScriptPath, scriptParsed);
-    })
-  );
+      await writeToApp(scriptFilename, scriptParsed);
+    } catch (error) {
+      console.log(`*** Error ${scriptFilename}`, '\n', error.toString());
+    }
+  }
 
   console.log('Scripts processed!');
 };
@@ -89,7 +106,13 @@ const searchResourceDir = async currentPath => {
   throw new Error('Resource folder not found');
 };
 
+const writeToApp = async (filename, content) => {
+  const fileAppPath = path.resolve(filename).replace('/js', '/app');
+  await mkdirp(path.dirname(fileAppPath));
+  await writeFile(fileAppPath, content);
+};
+
 module.exports.process = async () => {
   await processComponents();
-  await processScripts();
+  // await processScripts();
 };
