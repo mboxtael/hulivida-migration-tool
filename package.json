@@ -1,7 +1,7 @@
 {
   "name": "@mboxtael/hulivida-migration-tool",
   "description": "Migrate a structure of vue components in multiple files to SFC",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Mauricio Boxtael @mboxtael",
   "bin": {
     "hulivida-migration-tool": "./bin/run"
