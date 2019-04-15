@@ -1,5 +1,4 @@
 const lebab = require('lebab');
-const AMDToESM = require('amd-to-es6');
 
 const extractStyleFilename = source => {
   const styleMatch = new RegExp(
@@ -51,7 +50,7 @@ const toES6 = source => {
 
 const AMDtoES6 = source => {
   try {
-    return addDynamicImports(toES6(AMDToESM(removeDynamicImports(source))));
+    return addDynamicImports(toES6(removeDynamicImports(source)));
   } catch (error) {
     throw error;
   }
