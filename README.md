@@ -1,3 +1,8 @@
+[![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
+[![Version](https://img.shields.io/npm/v/mfc-to-sfc.svg)](https://www.npmjs.com/package/@mboxtael/hulivida-migration-tool)
+[![Downloads/week](https://img.shields.io/npm/dw/mfc-to-sfc.svg)](https://www.npmjs.com/package/@mboxtael/hulivida-migration-tool)
+[![License](https://img.shields.io/npm/l/mfc-to-sfc.svg)](https://github.com/mboxtael/hulivida-migration-tool/blob/master/package.json)
+
 hulivida-migration-tool
 ==========
 
@@ -21,9 +26,3 @@ Go to the directory where the components are to be migrated, the directory can a
 ```bash
 hulivida-migration-tool
 ```
-
-[![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-[![Version](https://img.shields.io/npm/v/mfc-to-sfc.svg)](https://www.npmjs.com/package/@mboxtael/hulivida-migration-tool)
-[![Downloads/week](https://img.shields.io/npm/dw/mfc-to-sfc.svg)](https://www.npmjs.com/package/@mboxtael/hulivida-migration-tool)
-[![License](https://img.shields.io/npm/l/mfc-to-sfc.svg)](https://github.com/mboxtael/hulivida-migration-tool/blob/master/package.json)
-
